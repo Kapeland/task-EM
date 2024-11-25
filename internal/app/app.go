@@ -1,34 +1,39 @@
 package app
 
+import (
+	"context"
+	"fmt"
+	"github.com/Kapeland/task-EM/internal/models"
+	"github.com/Kapeland/task-EM/internal/services"
+	"github.com/Kapeland/task-EM/internal/storage"
+	"github.com/Kapeland/task-EM/internal/storage/file-storage/file_provider"
+	"github.com/Kapeland/task-EM/internal/storage/file-storage/music"
+	musicPostgres "github.com/Kapeland/task-EM/internal/storage/repository/postgresql/music"
+	"github.com/Kapeland/task-EM/internal/utils/logger"
+)
+
 func Start() error {
-	//ctx := context.Background()
-	//dbStor, err := storage.NewDbStorage(ctx)
-	//if err != nil {
-	//	logger.Log(logger.ErrPrefix, fmt.Sprintf("App: Start: NewDbStorage: %s", err.Error()))
-	//	return err
-	//}
-	//defer dbStor.Close(ctx)
-	//
-	//usersRepo := users.New(dbStor.DB)
-	//authRepo := auth.New(dbStor.DB)
-	//testsRepo := tests.New(dbStor.DB)
-	//
-	//f := file_provider.NewFileProvider()
-	//ar := avatars.NewRepository(f)
-	//tp := test_pictures.NewRepository(f)
-	//mp := music.NewRepository(f)
-	//
-	//usersStorage := storage.NewUsersStorage(usersRepo, ar)
-	//authStorage := storage.NewAuthStorage(authRepo)
-	//testsStorage := storage.NewTestsStorage(testsRepo, tp, mp)
-	//
-	//amdl := models.NewModelAuth(&authStorage, &usersStorage)
-	//umdl := models.NewModelUsers(&usersStorage)
-	//tmdl := models.NewModelTests(&usersStorage, &testsStorage)
-	//
-	//serv := services.NewService(&amdl, &umdl, &tmdl)
-	//
-	//serv.Launch()
+	ctx := context.Background()
+	dbStor, err := storage.NewDbStorage(ctx)
+	if err != nil {
+		logger.Log(logger.ErrPrefix, fmt.Sprintf("App: Start: NewDbStorage: %s", err.Error()))
+		return err
+	}
+	defer dbStor.Close(ctx)
+
+	musicRepo := musicPostgres.New(dbStor.DB)
+
+	f := file_provider.NewFileProvider()
+
+	mp := music.NewRepository(f)
+
+	musicStorage := storage.NewMusicStorage(musicRepo, mp)
+
+	mmdl := models.NewModelMusic(&musicStorage)
+
+	serv := services.NewService(&mmdl)
+
+	serv.Launch()
 
 	return nil
 }
