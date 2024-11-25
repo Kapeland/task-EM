@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: db_EM
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5423:5432"
+    networks:
+      - project
+
+  project:
+    build:
+      context: .
+      dockerfile: ./build/package/Dockerfile
+    restart: "no"
+    ports:
+      - "9085:8080"
+    depends_on:
+      - postgres
+    networks:
+      - project
+
+networks:
+  project:
+    driver: bridge
