@@ -83,3 +83,5 @@ fabric.properties
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/task EM.iml
 /.idea/vcs.xml
+/.idea/dataSources.xml
+/.idea/sqldialects.xml
