@@ -27,9 +27,15 @@ func (s Service) Launch() {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
-	router.GET("/info", implMusic.GetLibInfo)
+	router.GET("/song", implMusic.GetSongText)
+	router.GET("/library", implMusic.GetLibInfo)
+	router.DELETE("/rmsong", implMusic.RemoveSong)
+	router.PUT("/modsong", implMusic.ChangeSong)
+	router.POST("/addsong", implMusic.AddSong)
 
 	if err = router.Run(":" + strconv.Itoa(cfg.Server.Port)); err != nil {
 		logger.Log(logger.ErrPrefix, fmt.Sprintf("Service: Launch: router.Run error: %s", err.Error()))
 	}
 }
+
+//TODO: Проверить, что апи в точности соответствует тому, что происходит
