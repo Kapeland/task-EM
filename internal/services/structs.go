@@ -1,66 +1,37 @@
 package services
 
-type GetAllTestsReq struct {
-	Category string `json:"category"`
-	Limit    int    `json:"limit"`
-	Offset   int    `json:"offset"`
+// remote endpoint /info
+type GetSongInfoResp struct {
+	ReleaseDate string `json:"releaseDate"`
+	Text        string `json:"text"`
+	Link        string `json:"link"`
 }
 
-type GetAllTestsResp struct {
-	Tests []GetAllTestsRespTest `json:"tests"`
+type AddSongReq struct {
+	Group string `json:"group"`
+	Name  string `json:"song"`
 }
 
-type GetAllTestsRespTest struct {
-	Id          int    `json:"id"`
-	Name        string `json:"name"`
-	DiffLevel   int    `json:"diff_level"`
-	Description string `json:"description"`
-	Category    string `json:"category"`
-	Picture     string `json:"picture"`
+type ChangeSongReq struct {
+	Group    string `json:"group"`
+	Name     string `json:"song"`
+	NewGroup string `json:"new_group"`
+	NewName  string `json:"new_song"`
 }
 
-type GetFullTestResp struct {
-	Id          int                       `json:"id"`
-	Name        string                    `json:"name"`
-	DiffLevel   int                       `json:"diff_level"`
-	Description string                    `json:"description"`
-	Category    string                    `json:"category"`
-	Questions   []GetFullTestRespQuestion `json:"questions"`
+type DeleteSongReq struct {
+	Group string `json:"group"`
+	Name  string `json:"song"`
 }
 
-type GetFullTestRespQuestion struct {
-	Id       int                     `json:"id"`
-	Question string                  `json:"question"`
-	IsSong   bool                    `json:"isSong"`
-	Song     string                  `json:"song"`
-	Answers  []GetFullTestRespAnswer `json:"answers"`
+type GetSongTextReq struct {
+	Group string `json:"group"`
+	Name  string `json:"song"`
 }
 
-type GetFullTestRespAnswer struct {
-	Id     int    `json:"id"`
-	Answer string `json:"answer"`
+type GetSongTextResp struct {
+	Name string `json:"song"`
+	Text string `json:"text"`
 }
 
-type GetUserScoreReq struct {
-	Answers []GetUserScoreReqAnswer `json:"user_answers"`
-}
-
-type GetUserScoreReqAnswer struct {
-	QuestionId int `json:"question_id"`
-	AnswerId   int `json:"answer_id"`
-}
-
-type GetUserScoreResp struct {
-	UserScore int `json:"user_score"`
-	Total     int `json:"total"`
-}
-
-type GetRatingResp struct {
-	Rating []GetRatingRespUnit `json:"rating"`
-}
-
-type GetRatingRespUnit struct {
-	Login string `json:"login"`
-	Place int    `json:"place"`
-	Score int    `json:"score"`
-}
+//TODO:добавить тип для получения всей библиотеки
