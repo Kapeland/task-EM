@@ -3,11 +3,12 @@ package models
 import (
 	"context"
 	"github.com/Kapeland/task-EM/internal/models/structs"
+	"github.com/pkg/errors"
 )
 
 type MusicStorager interface {
 	GetAllMusic(ctx context.Context, id int) (structs.TestFull, error)
-	GetSongText(ctx context.Context, id int) (structs.TestFull, error)
+	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, id int) (structs.TestFull, error)
 	AddSong(ctx context.Context, id int) (structs.TestFull, error)
 	ChangeSongText(ctx context.Context, id int) (structs.TestFull, error)
@@ -24,8 +25,17 @@ const TotalCategory = ""
 func (m *ModelMusic) GetLibInfo(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil
 }
-func (m *ModelMusic) GetSongText(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *ModelMusic) GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error) {
+	song, err := m.ms.GetSongText(ctx, group, name)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return structs.MusicEntry{}, ErrNotFound
+		}
+
+		return structs.MusicEntry{}, err
+	}
+
+	return song, nil
 }
 func (m *ModelMusic) DeleteSong(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil
@@ -36,23 +46,3 @@ func (m *ModelMusic) ChangeSongText(ctx context.Context, id int) (structs.TestFu
 func (m *ModelMusic) AddSong(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil
 }
-
-//func (m *ModelMusic) GetMusic(ctx context.Context, category string, limit int, offset int) ([]structs.TestSimple, error) {
-//	if limit == 0 {
-//		limit = defaultLimit
-//	}
-//	if offset == 0 {
-//		offset = defaultOffset
-//	}
-//
-//	if category == "" {
-//		category = TotalCategory
-//	}
-//
-//	tests, err := m.ms.GetMusic(ctx, category, limit, offset)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	return tests, nil
-//}

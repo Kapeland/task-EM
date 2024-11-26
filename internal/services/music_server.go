@@ -3,16 +3,18 @@ package services
 import (
 	"context"
 	"fmt"
+	"github.com/Kapeland/task-EM/internal/models"
 	"github.com/Kapeland/task-EM/internal/models/structs"
 	"github.com/Kapeland/task-EM/internal/utils/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"net/http"
 	"strconv"
 )
 
 type MusicModelManager interface {
 	GetLibInfo(ctx context.Context, id int) (structs.TestFull, error)
-	GetSongText(ctx context.Context, id int) (structs.TestFull, error)
+	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, id int) (structs.TestFull, error)
 	ChangeSongText(ctx context.Context, id int) (structs.TestFull, error)
 	AddSong(ctx context.Context, id int) (structs.TestFull, error)
@@ -21,65 +23,6 @@ type MusicModelManager interface {
 type musicServer struct {
 	m MusicModelManager
 }
-
-const categoryParam = "category"
-const limitParam = "limit"
-const offsetParam = "offset"
-
-//func (s *musicServer) GetAllTests(w http.ResponseWriter, req *http.Request) {
-//	category := req.URL.Query().Get(categoryParam)
-//	limit := req.URL.Query().Get(limitParam)
-//	offset := req.URL.Query().Get(offsetParam)
-//	par := getAllTestsParams{}
-//	par.fromStrings(category, limit, offset)
-//	data, status := s.getAllTests(req.Context(), par)
-//	w.Header().Set("Content-Type", "application/json")
-//	w.WriteHeader(status)
-//	_, err := w.Write(data)
-//	if err != nil {
-//		return
-//	}
-//}
-
-type getAllTestsParams struct {
-	Category string
-	Limit    int
-	Offset   int
-}
-
-func (p *getAllTestsParams) fromStrings(category, limit, offset string) {
-	p.Category = category
-	p.Limit, _ = strconv.Atoi(limit)
-	p.Offset, _ = strconv.Atoi(offset)
-}
-
-//func (s *musicServer) getAllTests(ctx context.Context, par getAllTestsParams) ([]byte, int) {
-//	t, err := s.m.GetLibInfo(ctx, par.Category, par.Limit, par.Offset)
-//	if err != nil {
-//		logger.Log(logger.ErrPrefix, fmt.Sprintf("GetMusic: %v", err))
-//		return nil, http.StatusInternalServerError
-//	}
-//
-//	tests := make([]GetAllTestsRespTest, 0)
-//	for _, t := range t {
-//		pic64 := base64.StdEncoding.EncodeToString(t.Picture)
-//		tests = append(tests, GetAllTestsRespTest{
-//			Id:          t.ID,
-//			Name:        t.Name,
-//			Description: t.Description,
-//			Category:    t.Category,
-//			DiffLevel:   t.DiffLevel,
-//			Picture:     pic64,
-//		})
-//	}
-//
-//	articleJSON, _ := json.Marshal(
-//		GetAllTestsResp{
-//			Tests: tests,
-//		},
-//	)
-//	return articleJSON, http.StatusOK
-//}
 
 func (s *musicServer) GetLibInfo(c *gin.Context) {
 	id, err := strconv.Atoi(c.Params.ByName("id"))
@@ -104,11 +47,43 @@ func (s *musicServer) getLibInfo(ctx context.Context, id int) ([]byte, int) {
 }
 
 func (s *musicServer) GetSongText(c *gin.Context) {
+	var sr GetSongTextReq
+	if err := c.ShouldBindJSON(&sr); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data, status := s.getSongText(c.Request.Context(), sr)
+
+	c.JSON(status, data)
+}
+
+func (s *musicServer) getSongText(ctx context.Context, sr GetSongTextReq) (GetSongTextResp, int) {
+	song, err := s.m.GetSongText(ctx, sr.Group, sr.Name)
+	if err != nil {
+		if errors.Is(err, models.ErrNotFound) {
+			return GetSongTextResp{}, http.StatusNotFound
+		}
+
+		logger.Log(logger.ErrPrefix, fmt.Sprintf(err.Error()))
+		return GetSongTextResp{}, http.StatusInternalServerError
+	}
+
+	return GetSongTextResp{
+		Name: song.Name,
+		Text: song.Text,
+	}, http.StatusOK
+}
+
+func (s *musicServer) RemoveSong(c *gin.Context) {
 	return
 }
 
-func (s *musicServer) getSongText(ctx context.Context, id int) ([]byte, int) {
-	return nil, 0
+func (s *musicServer) ChangeSong(c *gin.Context) {
+	return
 }
 
-//TODO: доделать необходимые методы, чтобы дёргать их из сервера
+func (s *musicServer) AddSong(c *gin.Context) {
+	//TODO: Этот метод должен обращаться к стороннему АПИ при добавлении песни, чтобы получить текст и ссылку
+	return
+}
