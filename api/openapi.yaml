@@ -5,20 +5,15 @@ info:
 paths:
   /song:
     get:
-      parameters:
-        - name: group
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: song
-          in: query
-          required: true
-          schema:
-            type: string
+      summary: Request song text
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongTextRequest'
       responses:
         '200':
-          description: Ok
+          description: Successful operation
           content:
             application/json:
               schema:
@@ -31,33 +26,27 @@ paths:
           description: Internal server error
   /library:
     get:
+      summary: Request whole library
       responses:
         '200':
-          description: Ok
+          description: Successful operation
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/LibraryContent'
-        '400':
-          description: Bad request
         '500':
           description: Internal server error
   /rmsong:
     delete:
-      parameters:
-        - name: group
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: song
-          in: query
-          required: true
-          schema:
-            type: string
+      summary: Remove song from library
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongTextRequest'
       responses:
         '200':
-          description: Ok
+          description: Successful operation
         '400':
           description: Bad request
         '404':
@@ -66,28 +55,15 @@ paths:
           description: Internal server error
   /modsong:
     put:
-      parameters:
-        - name: group
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: song
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: new_group
-          in: query
-          schema:
-            type: string
-        - name: new_song
-          in: query
-          schema:
-            type: string
+      summary: Modify song name and group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongModRequest'
       responses:
         '200':
-          description: Ok
+          description: Successful operation
         '400':
           description: Bad request or item already exists
         '404':
@@ -96,26 +72,45 @@ paths:
           description: Internal server error
   /addsong:
     post:
-      parameters:
-        - name: group
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: song
-          in: query
-          required: true
-          schema:
-            type: string
+      summary: Add new song
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SongTextRequest'
       responses:
         '200':
-          description: Ok
+          description: Successful operation
         '400':
           description: Bad request
         '500':
           description: Internal server error
 components:
   schemas:
+    SongTextRequest:
+      type: object
+      properties:
+        group:
+            type: string
+            example: group1
+        song:
+            type: string
+            example: someName
+    SongModRequest:
+      type: object
+      properties:
+        group:
+          type: string
+          example: group1
+        song:
+          type: string
+          example: someName
+        new_group:
+          type: string
+          example: group11
+        new_song:
+          type: string
+          example: someName1
     SongDetail:
       required:
         - song
@@ -129,14 +124,27 @@ components:
           type: string
           example: Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight
     LibraryContent:
-      required:
-        - song
-        - text
       type: object
       properties:
+        songs:
+          type: array
+          items:
+            $ref: '#/components/schemas/LibraryContentUnit'
+    LibraryContentUnit:
+      type: object
+      properties:
+        group:
+          type: string
+          example: group1
         song:
           type: string
           example: Supermassive Black Hole
         text:
           type: string
           example: Ooh baby, don't you know I suffer?\nOoh baby, can you hear me moan?\nYou caught me under false pretenses\nHow long before you let me go?\n\nOoh\nYou set my soul alight\nOoh\nYou set my soul alight
+        release:
+          type: string
+          example: 2020-10-10
+        link:
+          type: string
+          example: someRealLink
