@@ -38,8 +38,20 @@ func (m *Repo) GetAllMusic(ctx context.Context, id int) (structs.TestFull, error
 	return structs.TestFull{}, nil
 }
 
-func (m *Repo) DelSong(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+// DelSong directly deletes song  in postgres
+func (m *Repo) DelSong(ctx context.Context, group string, name string) error {
+	tag, err := m.db.Exec(ctx,
+		`DELETE FROM library_schema.library WHERE song_group = $1 and song = $2;`, group, name)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) || errors.Is(err, pgx.ErrNoRows) {
+			return repository.ErrObjectNotFound
+		}
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return repository.ErrObjectNotFound
+	}
+	return nil
 }
 
 // PutSong directly modifies song name and group in postgres

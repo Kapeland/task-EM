@@ -12,7 +12,7 @@ import (
 type MusicRepo interface {
 	GetAllMusic(ctx context.Context, id int) (structs.TestFull, error)
 	GetMusicText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
-	DelSong(ctx context.Context, id int) (structs.TestFull, error)
+	DelSong(ctx context.Context, group string, name string) error
 	PutSong(ctx context.Context, group string, newGroup string, name string, newName string) error
 	PostSong(ctx context.Context, id int) (structs.TestFull, error)
 }
@@ -46,8 +46,15 @@ func (m *MusicStorage) GetAllMusic(ctx context.Context, id int) (structs.TestFul
 	return structs.TestFull{}, nil
 }
 
-func (m *MusicStorage) DeleteSong(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *MusicStorage) DeleteSong(ctx context.Context, group string, name string) error {
+	err := m.musicRepo.DelSong(ctx, group, name)
+	if err != nil {
+		if errors.Is(err, repository.ErrObjectNotFound) {
+			return models.ErrNotFound
+		}
+		return err
+	}
+	return nil
 }
 func (m *MusicStorage) AddSong(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil

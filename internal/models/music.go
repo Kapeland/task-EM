@@ -9,7 +9,7 @@ import (
 type MusicStorager interface {
 	GetAllMusic(ctx context.Context, id int) (structs.TestFull, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
-	DeleteSong(ctx context.Context, id int) (structs.TestFull, error)
+	DeleteSong(ctx context.Context, group string, name string) error
 	AddSong(ctx context.Context, id int) (structs.TestFull, error)
 	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
 }
@@ -37,8 +37,16 @@ func (m *ModelMusic) GetSongText(ctx context.Context, group string, name string)
 
 	return song, nil
 }
-func (m *ModelMusic) DeleteSong(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *ModelMusic) DeleteSong(ctx context.Context, group string, name string) error {
+	err := m.ms.DeleteSong(ctx, group, name)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 func (m *ModelMusic) ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error {
 	err := m.ms.ChangeSongText(ctx, group, newGroup, name, newName)
