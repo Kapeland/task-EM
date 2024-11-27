@@ -9,11 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
-	"strconv"
 )
 
 type MusicModelManager interface {
-	GetLibInfo(ctx context.Context, id int) (structs.TestFull, error)
+	GetLibInfo(ctx context.Context) ([]structs.FullMusicEntry, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, group string, name string) error
 	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
@@ -25,25 +24,32 @@ type musicServer struct {
 }
 
 func (s *musicServer) GetLibInfo(c *gin.Context) {
-	id, err := strconv.Atoi(c.Params.ByName("id"))
-	if err != nil {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	}
-
-	data, status := s.getLibInfo(c.Request.Context(), id)
+	data, status := s.getLibInfo(c.Request.Context())
 
 	c.JSON(status, data)
 }
 
-func (s *musicServer) getLibInfo(ctx context.Context, id int) ([]byte, int) {
-	_, err := s.m.GetLibInfo(ctx, id)
+func (s *musicServer) getLibInfo(ctx context.Context) (GetLibraryContentResp, int) {
+	songs, err := s.m.GetLibInfo(ctx)
 	if err != nil {
 		logger.Log(logger.ErrPrefix, fmt.Sprintf(err.Error()))
-		return nil, http.StatusInternalServerError
+		return GetLibraryContentResp{}, http.StatusInternalServerError
+	}
+	libraryContent := make([]FullSongContent, len(songs))
+
+	for i, song := range songs {
+		libraryContent[i] = FullSongContent{
+			Group:   song.Group,
+			Name:    song.Name,
+			Text:    song.Text,
+			Release: song.Release.Format("2006-01-02"),
+			Link:    song.Link,
+		}
 	}
 
-	return nil, http.StatusOK
+	return GetLibraryContentResp{
+		Library: libraryContent,
+	}, http.StatusOK
 }
 
 func (s *musicServer) GetSongText(c *gin.Context) {

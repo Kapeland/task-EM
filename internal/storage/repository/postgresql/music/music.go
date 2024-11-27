@@ -34,8 +34,22 @@ func (m *Repo) GetMusicText(ctx context.Context, group string, name string) (str
 	return song, nil
 }
 
-func (m *Repo) GetAllMusic(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+// GetAllMusic directly extracts all library from postgres
+func (m *Repo) GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error) {
+
+	var songs []*structs.FullMusicEntry
+	err := m.db.Select(ctx, &songs,
+		`SELECT song_group, song, song_text, release_date, link
+		FROM library_schema.library;
+		`)
+	if err != nil {
+		return nil, err
+	}
+	songsOut := make([]structs.FullMusicEntry, len(songs))
+	for i, song := range songs {
+		songsOut[i] = *song
+	}
+	return songsOut, nil
 }
 
 // DelSong directly deletes song  in postgres

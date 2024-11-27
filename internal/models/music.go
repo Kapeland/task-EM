@@ -7,7 +7,7 @@ import (
 )
 
 type MusicStorager interface {
-	GetAllMusic(ctx context.Context, id int) (structs.TestFull, error)
+	GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, group string, name string) error
 	AddSong(ctx context.Context, id int) (structs.TestFull, error)
@@ -22,8 +22,13 @@ const defaultRatingOffset = 0
 
 const TotalCategory = ""
 
-func (m *ModelMusic) GetLibInfo(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *ModelMusic) GetLibInfo(ctx context.Context) ([]structs.FullMusicEntry, error) {
+	songs, err := m.ms.GetAllMusic(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return songs, nil
 }
 func (m *ModelMusic) GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error) {
 	song, err := m.ms.GetSongText(ctx, group, name)

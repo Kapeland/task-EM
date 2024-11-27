@@ -10,7 +10,7 @@ import (
 )
 
 type MusicRepo interface {
-	GetAllMusic(ctx context.Context, id int) (structs.TestFull, error)
+	GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error)
 	GetMusicText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DelSong(ctx context.Context, group string, name string) error
 	PutSong(ctx context.Context, group string, newGroup string, name string, newName string) error
@@ -42,8 +42,13 @@ func (m *MusicStorage) GetSongText(ctx context.Context, group string, name strin
 	return song, nil
 }
 
-func (m *MusicStorage) GetAllMusic(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *MusicStorage) GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error) {
+	songs, err := m.musicRepo.GetAllMusic(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return songs, nil
 }
 
 func (m *MusicStorage) DeleteSong(ctx context.Context, group string, name string) error {
