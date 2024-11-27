@@ -11,7 +11,7 @@ type MusicStorager interface {
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, id int) (structs.TestFull, error)
 	AddSong(ctx context.Context, id int) (structs.TestFull, error)
-	ChangeSongText(ctx context.Context, id int) (structs.TestFull, error)
+	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
 }
 
 const defaultLimit = 100
@@ -40,8 +40,19 @@ func (m *ModelMusic) GetSongText(ctx context.Context, group string, name string)
 func (m *ModelMusic) DeleteSong(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil
 }
-func (m *ModelMusic) ChangeSongText(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *ModelMusic) ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error {
+	err := m.ms.ChangeSongText(ctx, group, newGroup, name, newName)
+	if err != nil {
+		if errors.Is(err, ErrConflict) {
+			return ErrConflict
+		}
+		if errors.Is(err, ErrNotFound) {
+			return ErrNotFound
+		}
+		return err
+	}
+
+	return nil
 }
 func (m *ModelMusic) AddSong(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil

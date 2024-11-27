@@ -16,7 +16,7 @@ type MusicModelManager interface {
 	GetLibInfo(ctx context.Context, id int) (structs.TestFull, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, id int) (structs.TestFull, error)
-	ChangeSongText(ctx context.Context, id int) (structs.TestFull, error)
+	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
 	AddSong(ctx context.Context, id int) (structs.TestFull, error)
 }
 
@@ -80,7 +80,29 @@ func (s *musicServer) RemoveSong(c *gin.Context) {
 }
 
 func (s *musicServer) ChangeSong(c *gin.Context) {
-	return
+	var sr ChangeSongReq
+	if err := c.ShouldBindJSON(&sr); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	status := s.changeSong(c.Request.Context(), sr)
+
+	c.JSON(status, []byte(""))
+}
+func (s *musicServer) changeSong(ctx context.Context, sr ChangeSongReq) int {
+	err := s.m.ChangeSongText(ctx, sr.Group, sr.NewGroup, sr.Name, sr.NewName)
+	if err != nil {
+		if errors.Is(err, models.ErrConflict) {
+			return http.StatusBadRequest
+		}
+		if errors.Is(err, models.ErrNotFound) {
+			return http.StatusNotFound
+		}
+		logger.Log(logger.ErrPrefix, fmt.Sprintf(err.Error()))
+		return http.StatusInternalServerError
+	}
+	return http.StatusOK
 }
 
 func (s *musicServer) AddSong(c *gin.Context) {

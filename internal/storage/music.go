@@ -13,7 +13,7 @@ type MusicRepo interface {
 	GetAllMusic(ctx context.Context, id int) (structs.TestFull, error)
 	GetMusicText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DelSong(ctx context.Context, id int) (structs.TestFull, error)
-	PutSong(ctx context.Context, id int) (structs.TestFull, error)
+	PutSong(ctx context.Context, group string, newGroup string, name string, newName string) error
 	PostSong(ctx context.Context, id int) (structs.TestFull, error)
 }
 
@@ -52,6 +52,17 @@ func (m *MusicStorage) DeleteSong(ctx context.Context, id int) (structs.TestFull
 func (m *MusicStorage) AddSong(ctx context.Context, id int) (structs.TestFull, error) {
 	return structs.TestFull{}, nil
 }
-func (m *MusicStorage) ChangeSongText(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *MusicStorage) ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error {
+	err := m.musicRepo.PutSong(ctx, group, newGroup, name, newName)
+	if err != nil {
+		if errors.Is(err, repository.ErrDuplicateKey) {
+			return models.ErrConflict
+		}
+		if errors.Is(err, repository.ErrObjectNotFound) {
+			return models.ErrNotFound
+		}
+
+		return err
+	}
+	return nil
 }
