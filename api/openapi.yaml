@@ -60,6 +60,8 @@ paths:
           description: Ok
         '400':
           description: Bad request
+        '404':
+          description: Song not found
         '500':
           description: Internal server error
   /modsong:
@@ -87,7 +89,9 @@ paths:
         '200':
           description: Ok
         '400':
-          description: Bad request
+          description: Bad request or item already exists
+        '404':
+          description: Song not found
         '500':
           description: Internal server error
   /addsong:
