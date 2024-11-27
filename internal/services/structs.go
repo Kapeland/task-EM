@@ -34,4 +34,14 @@ type GetSongTextResp struct {
 	Text string `json:"text"`
 }
 
-//TODO:добавить тип для получения всей библиотеки
+type FullSongContent struct {
+	Group   string `json:"group"`
+	Name    string `json:"song"`
+	Text    string `json:"text"`
+	Release string `json:"release"`
+	Link    string `json:"link"`
+}
+
+type GetLibraryContentResp struct {
+	Library []FullSongContent `json:"songs"`
+}
