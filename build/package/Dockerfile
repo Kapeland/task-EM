@@ -24,9 +24,6 @@ WORKDIR /root/
 
 COPY --from=builder /home/${MODULE_NAME}/bin/main .
 COPY --from=builder /home/${MODULE_NAME}/configs ./configs
-#RUN mkdir ./file-storage
-
-#COPY --from=builder /home/${MODULE_NAME}/file-storage/music ./file-storage/music
 
 
 COPY --from=builder /go/bin/goose ./goose

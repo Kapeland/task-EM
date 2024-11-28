@@ -2,7 +2,6 @@
 server:
   host: "localhost"
   port: 8080
-  secure_port: 8080
 
 # Database configuration and credentials
 database:
