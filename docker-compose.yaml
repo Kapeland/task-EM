@@ -1,12 +1,10 @@
 services:
   postgres:
     image: postgres:16
-    environment:
-      POSTGRES_DB: db_EM
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+    env_file:
+      - .env
     ports:
-      - "5423:5432"
+      - "${POSTGRES_EXPORT_PORT}:5432"
     networks:
       - project
 
@@ -14,9 +12,11 @@ services:
     build:
       context: .
       dockerfile: ./build/package/Dockerfile
+    env_file:
+      - .env
     restart: "no"
     ports:
-      - "9085:8080"
+      - "${PROJECT_EXPORT_PORT}:8080"
     depends_on:
       - postgres
     networks:
