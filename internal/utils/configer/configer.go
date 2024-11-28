@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 )
 
+// configPathEnv is set in Dockerfile
 const configPathEnv = "CONFIG_PATH"
 
 type Config struct {
