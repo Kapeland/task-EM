@@ -1,6 +1,6 @@
 package services
 
-// remote endpoint /info
+// GetSongInfoResp remote endpoint /info
 type GetSongInfoResp struct {
 	ReleaseDate string `json:"releaseDate"`
 	Text        string `json:"text"`

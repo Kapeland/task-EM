@@ -35,7 +35,7 @@ func (db Database) BeginTx(_ context.Context, _ *pgx.TxOptions) error {
 	return nil
 }
 
-// newDatabase create new database from pg pool
+// newDatabase create a new database from pg pool
 func newDatabase(cluster *pgxpool.Pool) *Database {
 	return &Database{cluster: cluster}
 }
