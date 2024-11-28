@@ -10,7 +10,7 @@ type MusicStorager interface {
 	GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, group string, name string) error
-	AddSong(ctx context.Context, id int) (structs.TestFull, error)
+	AddSong(ctx context.Context, fsc structs.FullMusicEntry) error
 	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
 }
 
@@ -67,6 +67,14 @@ func (m *ModelMusic) ChangeSongText(ctx context.Context, group string, newGroup 
 
 	return nil
 }
-func (m *ModelMusic) AddSong(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *ModelMusic) AddSong(ctx context.Context, fsc structs.FullMusicEntry) error {
+	err := m.ms.AddSong(ctx, fsc)
+	if err != nil {
+		if errors.Is(err, ErrConflict) {
+			return ErrConflict
+		}
+		return err
+	}
+
+	return nil
 }

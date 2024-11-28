@@ -52,7 +52,7 @@ func (m *Repo) GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error
 	return songsOut, nil
 }
 
-// DelSong directly deletes song  in postgres
+// DelSong directly deletes song in postgres
 func (m *Repo) DelSong(ctx context.Context, group string, name string) error {
 	tag, err := m.db.Exec(ctx,
 		`DELETE FROM library_schema.library WHERE song_group = $1 and song = $2;`, group, name)
@@ -88,6 +88,20 @@ func (m *Repo) PutSong(ctx context.Context, group string, newGroup string, name 
 	return nil
 }
 
-func (m *Repo) PostSong(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *Repo) PostSong(ctx context.Context, fsc structs.FullMusicEntry) error {
+	tmp := ""
+	err := m.db.ExecQueryRow(ctx,
+		`INSERT INTO library_schema.library(song_group, song, song_text, release_date, link)
+				VALUES($1,$2,$3,$4,$5) returning song;`, fsc.Group, fsc.Name, fsc.Text, fsc.Release, fsc.Link).Scan(&tmp)
+
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+		var pgErr *pgconn.PgError
+		errors.As(err, &pgErr)
+		if pgErr.Code == "23505" {
+			return repository.ErrDuplicateKey
+		}
+		return err
+	}
+
+	return nil
 }

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/Kapeland/task-EM/internal/models"
 	"github.com/Kapeland/task-EM/internal/models/structs"
@@ -9,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"net/http"
+	"net/url"
+	"time"
 )
 
 type MusicModelManager interface {
@@ -16,7 +19,7 @@ type MusicModelManager interface {
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, group string, name string) error
 	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
-	AddSong(ctx context.Context, id int) (structs.TestFull, error)
+	AddSong(ctx context.Context, fsc structs.FullMusicEntry) error
 }
 
 type musicServer struct {
@@ -132,5 +135,68 @@ func (s *musicServer) changeSong(ctx context.Context, sr ChangeSongReq) int {
 
 func (s *musicServer) AddSong(c *gin.Context) {
 	//TODO: Этот метод должен обращаться к стороннему АПИ при добавлении песни, чтобы получить текст и ссылку
-	return
+	var sr AddSongReq
+	if err := c.ShouldBindJSON(&sr); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	data, status := s.getSongFromRemote(sr)
+	if status != http.StatusOK {
+		c.JSON(status, []byte(""))
+		return
+	}
+
+	tmpTime, err := time.Parse("2006-01-02", data.ReleaseDate)
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, []byte(""))
+	}
+
+	status = s.addSong(c.Request.Context(), structs.FullMusicEntry{
+		Group:   sr.Group,
+		Name:    sr.Name,
+		Text:    data.Text,
+		Release: tmpTime,
+		Link:    data.Link,
+	})
+
+	c.JSON(status, []byte(""))
 }
+
+func (s *musicServer) getSongFromRemote(sr AddSongReq) (GetSongInfoResp, int) {
+	params := url.Values{}
+	params.Add("group", sr.Group)
+	params.Add("song", sr.Name)
+	//TODO: поменять на необходимый адрес.
+	resp, err := http.Get("https://URL.com?" + params.Encode())
+	if err != nil {
+		logger.Log(logger.ErrPrefix, fmt.Sprintf("Music_server: getSongFromRemote: Get error: %s", err.Error()))
+		return GetSongInfoResp{}, http.StatusInternalServerError
+	}
+	defer resp.Body.Close()
+
+	var remoteSongResp GetSongInfoResp
+
+	if err := json.NewDecoder(resp.Body).Decode(&remoteSongResp); err != nil {
+		logger.Log(logger.ErrPrefix, fmt.Sprintf("Music_server: getSongFromRemote: Decode error: %s", err.Error()))
+		return GetSongInfoResp{}, http.StatusInternalServerError
+	}
+
+	return remoteSongResp, http.StatusOK
+}
+
+func (s *musicServer) addSong(ctx context.Context, fsc structs.FullMusicEntry) int {
+	err := s.m.AddSong(ctx, fsc)
+	if err != nil {
+		if errors.Is(err, models.ErrConflict) {
+			return http.StatusBadRequest
+		}
+
+		logger.Log(logger.ErrPrefix, fmt.Sprintf(err.Error()))
+		return http.StatusInternalServerError
+	}
+	return http.StatusOK
+}
+
+//TODO: обновить апи

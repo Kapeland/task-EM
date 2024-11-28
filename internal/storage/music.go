@@ -14,7 +14,7 @@ type MusicRepo interface {
 	GetMusicText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DelSong(ctx context.Context, group string, name string) error
 	PutSong(ctx context.Context, group string, newGroup string, name string, newName string) error
-	PostSong(ctx context.Context, id int) (structs.TestFull, error)
+	PostSong(ctx context.Context, fsc structs.FullMusicEntry) error
 }
 
 type MusicStorage struct {
@@ -61,8 +61,17 @@ func (m *MusicStorage) DeleteSong(ctx context.Context, group string, name string
 	}
 	return nil
 }
-func (m *MusicStorage) AddSong(ctx context.Context, id int) (structs.TestFull, error) {
-	return structs.TestFull{}, nil
+func (m *MusicStorage) AddSong(ctx context.Context, fsc structs.FullMusicEntry) error {
+	err := m.musicRepo.PostSong(ctx, fsc)
+	if err != nil {
+		if errors.Is(err, repository.ErrDuplicateKey) {
+			return models.ErrConflict
+		}
+
+		return err
+	}
+
+	return nil
 }
 func (m *MusicStorage) ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error {
 	err := m.musicRepo.PutSong(ctx, group, newGroup, name, newName)
