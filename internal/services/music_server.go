@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/Kapeland/task-EM/internal/models"
 	"github.com/Kapeland/task-EM/internal/models/structs"
+	"github.com/Kapeland/task-EM/internal/utils/configer"
 	"github.com/Kapeland/task-EM/internal/utils/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -134,7 +135,6 @@ func (s *musicServer) changeSong(ctx context.Context, sr ChangeSongReq) int {
 }
 
 func (s *musicServer) AddSong(c *gin.Context) {
-	//TODO: Этот метод должен обращаться к стороннему АПИ при добавлении песни, чтобы получить текст и ссылку
 	var sr AddSongReq
 	if err := c.ShouldBindJSON(&sr); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
@@ -165,15 +165,28 @@ func (s *musicServer) AddSong(c *gin.Context) {
 }
 
 func (s *musicServer) getSongFromRemote(sr AddSongReq) (GetSongInfoResp, int) {
+	cfg, err := configer.GetConfig()
+	if err != nil {
+		logger.Log(logger.ErrPrefix, fmt.Sprintf("Service: Launch: configer.GetConfig error: %s", err.Error()))
+		return GetSongInfoResp{}, http.StatusInternalServerError
+	}
+
 	params := url.Values{}
 	params.Add("group", sr.Group)
 	params.Add("song", sr.Name)
-	//TODO: поменять на необходимый адрес.
-	resp, err := http.Get("https://URL.com?" + params.Encode())
+
+	remoteURL := fmt.Sprintf("%s://%s:%d/info?%s", cfg.RmServer.Protocol, cfg.RmServer.Host, cfg.RmServer.Port, params.Encode())
+	resp, err := http.Get(remoteURL)
 	if err != nil {
+		logger.Log(logger.InfoPrefix, fmt.Sprintf("Music_server: getSongFromRemote: Get url: %s", remoteURL))
 		logger.Log(logger.ErrPrefix, fmt.Sprintf("Music_server: getSongFromRemote: Get error: %s", err.Error()))
 		return GetSongInfoResp{}, http.StatusInternalServerError
 	}
+	if resp.StatusCode != http.StatusOK {
+		logger.Log(logger.ErrPrefix, fmt.Sprintf("Music_server: getSongFromRemote: StatusCode from remote: %d", resp.StatusCode))
+		return GetSongInfoResp{}, http.StatusInternalServerError
+	}
+
 	defer resp.Body.Close()
 
 	var remoteSongResp GetSongInfoResp
