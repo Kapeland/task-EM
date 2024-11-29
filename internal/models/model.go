@@ -7,5 +7,3 @@ type ModelMusic struct {
 func NewModelMusic(ms MusicStorager) ModelMusic {
 	return ModelMusic{ms}
 }
-
-const ServiceName = "EMMusicStorage"
