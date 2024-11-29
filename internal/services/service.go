@@ -37,5 +37,3 @@ func (s Service) Launch() {
 		logger.Log(logger.ErrPrefix, fmt.Sprintf("Service: Launch: router.Run error: %s", err.Error()))
 	}
 }
-
-//TODO: Проверить, что апи в точности соответствует тому, что происходит
