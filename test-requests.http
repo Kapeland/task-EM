@@ -1,0 +1,110 @@
+### Exsisting item -- Success recv
+GET http://localhost:9085/song
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "group2",
+  "song": "song2"
+}
+
+### nonexsisting item -- Success recv
+GET http://localhost:9085/song
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "group0",
+  "song": "song0"
+}
+
+### nonexsisting item -- Success (can't find item)
+PUT http://localhost:9085/modsong
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "group0",
+  "song": "song0",
+  "new_group": "grouppp",
+  "new_song": "songgg"
+}
+
+### Exsisting item -- Success update
+PUT http://localhost:9085/modsong
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "group1",
+  "song": "song1",
+  "new_group": "grouppp",
+  "new_song": "songgg"
+}
+
+### Exsisting item and update to exsisting item -- Success (duplicate primary key)
+PUT http://localhost:9085/modsong
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "grouppp",
+  "song": "songgg",
+  "new_group": "group2",
+  "new_song": "song2"
+}
+
+### Exsisting item and update to partly exsisting item -- Success update
+PUT http://localhost:9085/modsong
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "grouppp",
+  "song": "songgg",
+  "new_group": "group2",
+  "new_song": "songgg"
+}
+
+### Exsisting item  -- Success delete
+DELETE http://localhost:9085/rmsong
+Content-Type: application/json
+Accept: application/json
+
+{
+"group": "group2",
+"song": "songgg"
+}
+
+### nonexsisting item  -- Success delete
+DELETE http://localhost:9085/rmsong
+Content-Type: application/json
+Accept: application/json
+
+{
+  "group": "group2",
+  "song": "songgg"
+}
+
+### Get library with existing content  -- Success recv
+GET http://localhost:9085/library
+Accept: application/json
+
+### Get library with filer existing group as filter  -- Success recv
+GET http://localhost:9085/library?group=group5
+Accept: application/json
+
+### Get library with filer nonexisting group as filter  -- Success empty recv
+GET http://localhost:9085/library?group=group50
+Accept: application/json
+
+
+### Add song  -- Success post
+POST http://localhost:9085/addsong
+Accept: application/json
+Content-Type: application/json
+
+{
+  "group": "group9",
+  "song": "song9"
+}
