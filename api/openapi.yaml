@@ -27,6 +27,12 @@ paths:
   /library:
     get:
       summary: Request whole library
+      parameters:
+        - name: group
+          in: query
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Successful operation
@@ -34,6 +40,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/LibraryContent'
+        '400':
+          description: Bad request
         '500':
           description: Internal server error
   /rmsong:
@@ -82,7 +90,7 @@ paths:
         '200':
           description: Successful operation
         '400':
-          description: Bad request
+          description: Bad request or item already exists
         '500':
           description: Internal server error
 components:
