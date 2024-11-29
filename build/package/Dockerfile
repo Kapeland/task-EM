@@ -31,17 +31,12 @@ COPY --from=builder /home/${MODULE_NAME}/internal/storage/db/migrations ./postgr
 
 RUN chown root:root main
 
-ARG CONFIG_FILE=configs/in-docker-config.yaml
-ENV CONFIG_FILE ${CONFIG_FILE}
-
 ARG MIGRATION_FOLDER=postgres/migrations
 ENV MIGRATION_FOLDER=${MIGRATION_FOLDER}
 ARG POSTGRES_SETUP="user=postgres password=password dbname=db_EM host=postgres port=5432 sslmode=disable"
 ENV POSTGRES_SETUP=${POSTGRES_SETUP}
 
 
-CMD ["sh", "-c", "export CONFIG_PATH=${CONFIG_FILE}  && \
-    sleep 7 && \
-    ./goose -dir ${MIGRATION_FOLDER} postgres \"${POSTGRES_SETUP}\" up && \
+CMD ["sh", "-c", "./goose -dir ${MIGRATION_FOLDER} postgres \"${POSTGRES_SETUP}\" up && \
     ./main && \
     ./goose -dir ${MIGRATION_FOLDER} postgres \"${POSTGRES_SETUP}\" down"]
