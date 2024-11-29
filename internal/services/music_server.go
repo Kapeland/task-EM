@@ -16,7 +16,7 @@ import (
 )
 
 type MusicModelManager interface {
-	GetLibInfo(ctx context.Context) ([]structs.FullMusicEntry, error)
+	GetLibInfo(ctx context.Context, group string) ([]structs.FullMusicEntry, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, group string, name string) error
 	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
@@ -28,13 +28,13 @@ type musicServer struct {
 }
 
 func (s *musicServer) GetLibInfo(c *gin.Context) {
-	data, status := s.getLibInfo(c.Request.Context())
+	data, status := s.getLibInfo(c.Request.Context(), c.Query("group"))
 
 	c.JSON(status, data)
 }
 
-func (s *musicServer) getLibInfo(ctx context.Context) (GetLibraryContentResp, int) {
-	songs, err := s.m.GetLibInfo(ctx)
+func (s *musicServer) getLibInfo(ctx context.Context, group string) (GetLibraryContentResp, int) {
+	songs, err := s.m.GetLibInfo(ctx, group)
 	if err != nil {
 		logger.Log(logger.ErrPrefix, fmt.Sprintf(err.Error()))
 		return GetLibraryContentResp{}, http.StatusInternalServerError
@@ -211,5 +211,3 @@ func (s *musicServer) addSong(ctx context.Context, fsc structs.FullMusicEntry) i
 	}
 	return http.StatusOK
 }
-
-//TODO: обновить апи

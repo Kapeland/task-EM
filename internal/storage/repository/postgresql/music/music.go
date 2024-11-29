@@ -3,6 +3,7 @@ package tests
 import (
 	"context"
 	"database/sql"
+	"github.com/Kapeland/task-EM/internal/models"
 	"github.com/Kapeland/task-EM/internal/models/structs"
 	"github.com/Kapeland/task-EM/internal/storage/db"
 	"github.com/Kapeland/task-EM/internal/storage/repository"
@@ -35,13 +36,16 @@ func (m *Repo) GetMusicText(ctx context.Context, group string, name string) (str
 }
 
 // GetAllMusic directly extracts all library from postgres
-func (m *Repo) GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error) {
+func (m *Repo) GetAllMusic(ctx context.Context, group string) ([]structs.FullMusicEntry, error) {
+	if group == models.GroupFilter {
+		group = "%"
+	}
 
 	var songs []*structs.FullMusicEntry
 	err := m.db.Select(ctx, &songs,
 		`SELECT song_group, song, song_text, release_date, link
-		FROM library_schema.library;
-		`)
+		FROM library_schema.library
+		WHERE song_group like $1;`, group)
 	if err != nil {
 		return nil, err
 	}
@@ -88,6 +92,7 @@ func (m *Repo) PutSong(ctx context.Context, group string, newGroup string, name 
 	return nil
 }
 
+// PostSong directly adds song to in postgres
 func (m *Repo) PostSong(ctx context.Context, fsc structs.FullMusicEntry) error {
 	tmp := ""
 	err := m.db.ExecQueryRow(ctx,

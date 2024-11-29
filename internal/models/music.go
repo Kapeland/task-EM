@@ -7,23 +7,18 @@ import (
 )
 
 type MusicStorager interface {
-	GetAllMusic(ctx context.Context) ([]structs.FullMusicEntry, error)
+	GetAllMusic(ctx context.Context, group string) ([]structs.FullMusicEntry, error)
 	GetSongText(ctx context.Context, group string, name string) (structs.MusicEntry, error)
 	DeleteSong(ctx context.Context, group string, name string) error
 	AddSong(ctx context.Context, fsc structs.FullMusicEntry) error
 	ChangeSongText(ctx context.Context, group string, newGroup string, name string, newName string) error
 }
 
-const defaultLimit = 100
-const defaultOffset = 0
+const GroupFilter = ""
 
-const defaultRatingLimit = 200
-const defaultRatingOffset = 0
+func (m *ModelMusic) GetLibInfo(ctx context.Context, group string) ([]structs.FullMusicEntry, error) {
 
-const TotalCategory = ""
-
-func (m *ModelMusic) GetLibInfo(ctx context.Context) ([]structs.FullMusicEntry, error) {
-	songs, err := m.ms.GetAllMusic(ctx)
+	songs, err := m.ms.GetAllMusic(ctx, group)
 	if err != nil {
 		return nil, err
 	}
