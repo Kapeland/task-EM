@@ -1,7 +1,7 @@
 package file_provider
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -13,7 +13,7 @@ func NewFileProvider() *FileProvider {
 }
 
 func (f *FileProvider) GetFile(path string) ([]byte, error) {
-	return ioutil.ReadFile(path)
+	return os.ReadFile(path)
 }
 
 func (f *FileProvider) GetAllFileNames(path string) ([]string, error) {
