@@ -22,6 +22,11 @@ type Config struct {
 		Password string `yaml:"password"`
 		Name     string `yaml:"name"`
 	} `yaml:"database"`
+	RmServer struct {
+		Protocol string `yaml:"protocol"`
+		Host     string `yaml:"host"`
+		Port     int    `yaml:"port"`
+	} `yaml:"rmserver"`
 }
 
 func GetConfig() (Config, error) {
