@@ -8,7 +8,7 @@ Accept: application/json
   "song": "song2"
 }
 
-### nonexsisting item -- Success recv
+### nonexsisting item -- Success empty recv
 GET http://localhost:9085/song
 Content-Type: application/json
 Accept: application/json
@@ -36,8 +36,8 @@ Content-Type: application/json
 Accept: application/json
 
 {
-  "group": "group1",
-  "song": "song1",
+  "group": "group3",
+  "song": "song3",
   "new_group": "grouppp",
   "new_song": "songgg"
 }
@@ -76,7 +76,7 @@ Accept: application/json
 "song": "songgg"
 }
 
-### nonexsisting item  -- Success delete
+### nonexsisting item  -- Success delete (item not found)
 DELETE http://localhost:9085/rmsong
 Content-Type: application/json
 Accept: application/json
@@ -105,6 +105,16 @@ Accept: application/json
 Content-Type: application/json
 
 {
-  "group": "group9",
-  "song": "song9"
+  "group": "group11",
+  "song": "song11"
+}
+
+### Add existing song  -- Bad request
+POST http://localhost:9085/addsong
+Accept: application/json
+Content-Type: application/json
+
+{
+  "group": "group10",
+  "song": "song10"
 }
