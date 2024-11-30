@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 type Repo struct {
@@ -32,6 +33,7 @@ func (m *Repo) GetMusicText(ctx context.Context, group string, name string) (str
 		}
 		return structs.MusicEntry{}, err
 	}
+	song.Text = strings.ReplaceAll(song.Text, "\\n", "\n")
 	return song, nil
 }
 
@@ -52,6 +54,7 @@ func (m *Repo) GetAllMusic(ctx context.Context, group string) ([]structs.FullMus
 	songsOut := make([]structs.FullMusicEntry, len(songs))
 	for i, song := range songs {
 		songsOut[i] = *song
+		songsOut[i].Text = strings.ReplaceAll(song.Text, "\\n", "\n")
 	}
 	return songsOut, nil
 }
