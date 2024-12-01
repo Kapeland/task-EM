@@ -147,10 +147,11 @@ func (s *musicServer) AddSong(c *gin.Context) {
 		return
 	}
 
-	tmpTime, err := time.Parse("2006-01-02", data.ReleaseDate)
+	tmpTime, err := time.Parse("02.01.2006", data.ReleaseDate)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, []byte(""))
+		return
 	}
 
 	status = s.addSong(c.Request.Context(), structs.FullMusicEntry{
